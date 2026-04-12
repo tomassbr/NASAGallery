@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<resources>
+    <string name="close">Zavrieť</string>
+    <string name="finish">Dokončiť</string>
+    <string name="done">Hotovo</string>
+    <string name="language_cs">CS</string>
+    <string name="image_picker_library">Knihovňa</string>
+    <string name="no">Nie</string>
+    <string name="clear">Vymazať</string>
+    <string name="unknown_error">Neznáma chyba</string>
+    <string name="image_picker_title">Výber fotografie</string>
+    <string name="dialog_error_close_text">Zavrieť</string>
+    <string name="skip">Preskočiť</string>
+    <string name="language_en_fullname">Angličtina</string>
+    <string name="cancel">Zrušiť</string>
+    <string name="yes">Áno</string>
+    <string name="next">Ďalší</string>
+    <string name="image_picker_subtitle">Vyberte, odkiaľ chcete fotografiu nahrať.</string>
+    <string name="error_no_internet_connection">Nie ste pripojení k internetu.</string>
+    <string name="error_nasa_rate_limit">Prekročený limit NASA API. Skús to znova neskôr alebo použij vlastný API kľúč.</string>
+    <string name="error_nasa_request_failed">Údaje z NASA sa nepodarilo načítať. Skús to prosím znova neskôr.</string>
+    <string name="ok">Ok</string>
+    <string name="sample_feature_title">Ukážková funkcionalita</string>
+    <string name="language_cs_fullname">Čeština</string>
+    <string name="back">Späť</string>
+    <string name="not_authorized">Užívateľ nie je autorizovaný</string>
+    <string name="image_picker_camera">Fotoaparát</string>
+    <string name="language_sk_fullname">Slovenčina</string>
+    <string name="language_en">EN</string>
+    <string name="language_sk">SK</string>
+    <string name="image_picker_cancel">Zrušiť</string>
+</resources>

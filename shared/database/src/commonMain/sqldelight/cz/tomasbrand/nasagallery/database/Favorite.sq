@@ -1,0 +1,34 @@
+CREATE TABLE Favorite (
+    id TEXT NOT NULL PRIMARY KEY,
+    nasa_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT,
+    media_type TEXT NOT NULL,
+    thumbnail_url TEXT NOT NULL,
+    full_url TEXT,
+    date_created TEXT,
+    saved_at INTEGER NOT NULL
+);
+
+CREATE INDEX idx_favorite_nasa_id ON Favorite(nasa_id);
+
+insertFavorite:
+INSERT OR REPLACE INTO Favorite(
+    id, nasa_id, title, description, media_type,
+    thumbnail_url, full_url, date_created, saved_at
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteFavorite:
+DELETE FROM Favorite WHERE nasa_id = ?;
+
+selectAllFavorites:
+SELECT * FROM Favorite ORDER BY saved_at DESC;
+
+selectFavoriteByNasaId:
+SELECT * FROM Favorite WHERE nasa_id = ? LIMIT 1;
+
+isFavorite:
+SELECT COUNT(*) > 0 FROM Favorite WHERE nasa_id = ?;
+
+selectFavoriteCount:
+SELECT COUNT(*) FROM Favorite;
