@@ -1,0 +1,13 @@
+output_dir: ${DERIVED_SOURCES_DIR}
+
+xcassets:
+  inputs:
+    - Resources/Colors.xcassets
+    - Resources/Images.xcassets
+  outputs:
+    - templatePath: swiftgen-xcassets.stencil
+      output: Assets.swift
+      params:
+        publicAccess: true
+        # Nested folders (Accent/Text/…) → nested enums; avoids duplicate `primary` / `secondary` names.
+        forceProvidesNamespaces: true
