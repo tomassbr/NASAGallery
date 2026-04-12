@@ -146,6 +146,8 @@ public struct FavoritesFeatureView: View {
             break // snackbar is managed locally via removeFavorite
         case .navigateToDetail:
             break
+        case .signInRequired:
+            break // TODO: present auth sheet when Add-from-guest is wired from gallery
         }
     }
 }

@@ -31,5 +31,13 @@ sealed class CommonError(localizedMessage: StringDesc, throwable: Throwable? = n
         throwable = throwable,
     )
 
+    /**
+     * Unexpected failure (e.g. serialization, IO) mapped from [runCatchingCommonNetworkExceptions].
+     */
+    class Unexpected(throwable: Throwable? = null) : CommonError(
+        localizedMessage = MR.strings.unknown_error.desc(),
+        throwable = throwable,
+    )
+
     data object Unknown : CommonError(localizedMessage = MR.strings.unknown_error.desc())
 }

@@ -36,7 +36,7 @@ import kmp.android.shared.style.Space
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-internal fun MediaDetailRoute(nasaId: String, navController: NavHostController) {
+fun MediaDetailRoute(nasaId: String, navController: NavHostController) {
     val galleryViewModel: GalleryViewModel = koinViewModel()
     val state by galleryViewModel.state.collectAsStateWithLifecycle()
     val item = state.items.firstOrNull { it.nasaId == nasaId }

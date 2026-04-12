@@ -9,6 +9,7 @@ android {
 kotlin {
     sourceSets {
         commonMain.dependencies {
+            implementation(project(":shared:auth"))
             implementation(project(":shared:base"))
             implementation(project(":shared:gallery"))
             implementation(project(":shared:database"))

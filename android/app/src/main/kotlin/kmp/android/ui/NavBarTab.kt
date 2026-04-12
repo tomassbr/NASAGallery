@@ -14,5 +14,5 @@ enum class NavBarTab(
 ) {
     HOME(route = "home_tab", label = "Home", icon = Icons.Default.Home),
     FAVORITES(route = "favorites_tab", label = "Favorites", icon = Icons.Default.Favorite),
-    PROFILE(route = "profile_tab", label = "Profile", icon = Icons.Default.Person),
+    PROFILE(route = "profile_tab", label = "Settings", icon = Icons.Default.Person),
 }

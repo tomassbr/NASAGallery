@@ -1,6 +1,6 @@
 package kmp.shared.auth.di
 
-import kmp.shared.auth.data.remote.MockTokenRefresher
+import kmp.shared.auth.data.remote.NoFirebaseTokenRefresher
 import kmp.shared.auth.data.remote.TokenRefresher
 import kmp.shared.auth.data.social.SocialAuthProvider
 import kmp.shared.auth.domain.usecase.GetCurrentUserUseCase
@@ -24,8 +24,8 @@ import org.koin.dsl.module
 val authModule = module {
     includes(authPlatformModule)
 
-    // Token refresher (mock until Firebase is configured)
-    singleOf(::MockTokenRefresher) bind TokenRefresher::class
+    // Token refresher (no-op until Firebase Auth refresh is wired)
+    singleOf(::NoFirebaseTokenRefresher) bind TokenRefresher::class
 
     // Session store
     singleOf(::GuestSessionStore)

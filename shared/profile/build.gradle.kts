@@ -12,5 +12,8 @@ kotlin {
             implementation(project(":shared:base"))
             implementation(libs.bundles.settings)
         }
+        androidMain.dependencies {
+            implementation(libs.coil.compose)
+        }
     }
 }

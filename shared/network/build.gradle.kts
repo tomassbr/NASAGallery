@@ -30,6 +30,7 @@ kotlin {
         commonMain.dependencies {
             implementation(project(":shared:base"))
             implementation(libs.bundles.ktor.common)
+            implementation(libs.bundles.settings)
             implementation(libs.kermit)
         }
         androidMain.dependencies {

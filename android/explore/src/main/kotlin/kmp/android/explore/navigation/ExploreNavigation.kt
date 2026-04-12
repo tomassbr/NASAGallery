@@ -1,5 +1,6 @@
 package kmp.android.explore.navigation
 
+// Standalone explore_tab graph (optional entry points / deep links). Primary flow is under home_tab via ApodGraph.
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.navigation
@@ -13,7 +14,9 @@ fun NavGraphBuilder.exploreNavGraph(navController: NavHostController) {
         route = ExploreGraph.rootPath,
     ) {
         composableDestination(ExploreGraph.Main) {
-            ExploreRoute(navController = navController)
+            ExploreRoute(
+                onNavigateToDetail = { nasaId -> navController.navigate(ExploreGraph.Detail(nasaId)) },
+            )
         }
         composableDestination(ExploreGraph.Detail) { backStackEntry ->
             val nasaId = backStackEntry.arguments?.getString(ExploreGraph.Detail.ARG_NASA_ID) ?: return@composableDestination

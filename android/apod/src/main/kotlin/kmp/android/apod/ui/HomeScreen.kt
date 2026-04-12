@@ -26,6 +26,9 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,9 +40,11 @@ import cz.tomasbrand.nasagallery.apod.presentation.ApodEvent
 import cz.tomasbrand.nasagallery.apod.presentation.ApodIntent
 import cz.tomasbrand.nasagallery.apod.presentation.ApodState
 import cz.tomasbrand.nasagallery.apod.presentation.ApodViewModel
+import cz.tomasbrand.nasagallery.gallery.domain.model.GalleryItem
 import cz.tomasbrand.nasagallery.gallery.presentation.GalleryIntent
 import cz.tomasbrand.nasagallery.gallery.presentation.GalleryState
 import cz.tomasbrand.nasagallery.gallery.presentation.GalleryViewModel
+import kmp.android.apod.navigation.ApodGraph
 import kmp.android.shared.components.ApodHeroCard
 import kmp.android.shared.components.NasaAsyncImage
 import kmp.android.shared.components.NasaChip
@@ -80,6 +85,8 @@ internal fun HomeRoute(navController: NavHostController) {
         galleryState = galleryState,
         onApodIntent = apodViewModel::onIntent,
         onGalleryIntent = galleryViewModel::onIntent,
+        onOpenGalleryDetail = { nasaId -> navController.navigate(ApodGraph.MediaDetail(nasaId)) },
+        onSeeAllExplore = { navController.navigate(ApodGraph.Explore()) },
     )
 }
 
@@ -91,7 +98,11 @@ private fun HomeScreen(
     galleryState: GalleryState,
     onApodIntent: (ApodIntent) -> Unit,
     onGalleryIntent: (GalleryIntent) -> Unit,
+    onOpenGalleryDetail: (String) -> Unit,
+    onSeeAllExplore: () -> Unit,
 ) {
+    var selectedFilter by remember { mutableStateOf("All Sources") }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -103,11 +114,19 @@ private fun HomeScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
         ) {
-            FilterSection()
+            FilterSection(
+                selectedFilter = selectedFilter,
+                onFilterSelected = { selectedFilter = it },
+            )
             Spacer(Modifier.height(Space.LG))
             TodaysPickSection(apodState = apodState, onApodIntent = onApodIntent)
             Spacer(Modifier.height(Space.LG))
-            ExploreSection(galleryState = galleryState, onGalleryIntent = onGalleryIntent)
+            ExploreSection(
+                galleryState = galleryState,
+                onGalleryIntent = onGalleryIntent,
+                onOpenGalleryDetail = onOpenGalleryDetail,
+                onSeeAllExplore = onSeeAllExplore,
+            )
         }
     }
 }
@@ -139,13 +158,20 @@ private fun HomeTopBar() {
 // MARK: - Filter Section
 
 @Composable
-private fun FilterSection() {
+private fun FilterSection(
+    selectedFilter: String,
+    onFilterSelected: (String) -> Unit,
+) {
     LazyRow(
         contentPadding = PaddingValues(horizontal = Space.screenHorizontal),
         horizontalArrangement = Arrangement.spacedBy(Space.SM),
     ) {
         items(filters) { filter ->
-            NasaChip(title = filter, isSelected = filter == "All Sources")
+            NasaChip(
+                title = filter,
+                isSelected = filter == selectedFilter,
+                onClick = { onFilterSelected(filter) },
+            )
         }
     }
 }
@@ -199,16 +225,37 @@ private fun ApodContent(
 private fun ExploreSection(
     galleryState: GalleryState,
     onGalleryIntent: (GalleryIntent) -> Unit,
+    onOpenGalleryDetail: (String) -> Unit,
+    onSeeAllExplore: () -> Unit,
 ) {
-    if (galleryState.items.isEmpty()) return
-    ExploreSectionHeader()
-    Spacer(Modifier.height(Space.SM))
-    GalleryCarousel(items = galleryState.items.take(10))
-    Spacer(Modifier.height(Space.XXXL))
+    Column {
+        ExploreSectionHeader(onSeeAllExplore = onSeeAllExplore)
+        Spacer(Modifier.height(Space.SM))
+        when {
+            galleryState.isLoading && galleryState.items.isEmpty() -> GalleryCarouselSkeleton()
+            galleryState.error != null && galleryState.items.isEmpty() && !galleryState.isLoading -> {
+                NasaErrorView(
+                    message = galleryState.error?.throwable?.message ?: "Error",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(120.dp)
+                        .padding(horizontal = Space.screenHorizontal),
+                    onRetry = { onGalleryIntent(GalleryIntent.LoadInitial) },
+                )
+            }
+            galleryState.items.isNotEmpty() -> {
+                GalleryCarousel(
+                    items = galleryState.items.take(10),
+                    onItemClick = { onOpenGalleryDetail(it.nasaId) },
+                )
+            }
+        }
+        Spacer(Modifier.height(Space.XXXL))
+    }
 }
 
 @Composable
-private fun ExploreSectionHeader() {
+private fun ExploreSectionHeader(onSeeAllExplore: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -219,20 +266,45 @@ private fun ExploreSectionHeader() {
             Text(text = "Explore", style = MaterialTheme.typography.subtitle1, color = NasaColor.OnBackground)
             Text(text = "NASA IMAGERY", style = MaterialTheme.typography.overline, color = NasaColor.Subtle)
         }
-        TextButton(onClick = {}) {
+        TextButton(onClick = onSeeAllExplore) {
             Text(text = "See all", style = MaterialTheme.typography.caption, color = NasaColor.Accent)
         }
     }
 }
 
 @Composable
-private fun GalleryCarousel(items: List<cz.tomasbrand.nasagallery.gallery.domain.model.GalleryItem>) {
+private fun GalleryCarouselSkeleton() {
     LazyRow(
         contentPadding = PaddingValues(horizontal = Space.screenHorizontal),
         horizontalArrangement = Arrangement.spacedBy(Space.SM),
     ) {
-        items(items) { item ->
-            GalleryCarouselCard(title = item.title, thumbnailUrl = item.thumbnailUrl, onClick = {})
+        items(5) {
+            Box(
+                modifier = Modifier
+                    .width(160.dp)
+                    .height(120.dp)
+                    .clip(RoundedCornerShape(Radius.MD))
+                    .background(NasaColor.Surface.copy(alpha = 0.5f)),
+            )
+        }
+    }
+}
+
+@Composable
+private fun GalleryCarousel(
+    items: List<GalleryItem>,
+    onItemClick: (GalleryItem) -> Unit,
+) {
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = Space.screenHorizontal),
+        horizontalArrangement = Arrangement.spacedBy(Space.SM),
+    ) {
+        items(items, key = { it.nasaId }) { item ->
+            GalleryCarouselCard(
+                title = item.title,
+                thumbnailUrl = item.thumbnailUrl,
+                onClick = { onItemClick(item) },
+            )
         }
     }
 }

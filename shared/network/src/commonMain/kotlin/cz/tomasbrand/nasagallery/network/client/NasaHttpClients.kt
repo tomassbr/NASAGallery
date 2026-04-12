@@ -1,7 +1,7 @@
 package cz.tomasbrand.nasagallery.network.client
 
 import cz.tomasbrand.nasagallery.network.NasaApiConstants
-import cz.tomasbrand.nasagallery.network.NasaAppConfig
+import cz.tomasbrand.nasagallery.network.NasaApiKeyResolver
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -13,6 +13,19 @@ import io.ktor.http.URLProtocol
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import co.touchlab.kermit.Logger as KermitLogger
+
+private val apiKeyQueryRedactor = Regex("""(?i)([?&]api_key=)[^&\s"]+""")
+
+internal fun redactNasaHttpLogMessage(message: String): String =
+    apiKeyQueryRedactor.replace(message) { "${it.groupValues[1]}***" }
+
+private fun ktorDebugLogger(tag: String, redactApiKeyInQuery: Boolean): Logger =
+    object : Logger {
+        override fun log(message: String) {
+            val line = if (redactApiKeyInQuery) redactNasaHttpLogMessage(message) else message
+            KermitLogger.d { "[$tag] $line" }
+        }
+    }
 
 internal val nasaJson = Json {
     ignoreUnknownKeys = true
@@ -26,7 +39,7 @@ internal val nasaJson = Json {
  */
 internal fun buildApodClient(
     engine: HttpClientEngine,
-    config: NasaAppConfig,
+    apiKeyResolver: NasaApiKeyResolver,
     isDebug: Boolean,
 ): HttpClient = HttpClient(engine) {
     expectSuccess = true
@@ -37,9 +50,7 @@ internal fun buildApodClient(
 
     if (isDebug) {
         install(Logging) {
-            logger = object : Logger {
-                override fun log(message: String) { KermitLogger.d { "[APOD] $message" } }
-            }
+            logger = ktorDebugLogger(tag = "APOD", redactApiKeyInQuery = true)
             level = LogLevel.ALL
         }
     }
@@ -49,7 +60,7 @@ internal fun buildApodClient(
             protocol = URLProtocol.HTTPS
             host = NasaApiConstants.APOD_BASE_URL
             // Append api_key to every request
-            parameters.append(NasaApiConstants.QueryParams.API_KEY, config.nasaApiKey)
+            parameters.append(NasaApiConstants.QueryParams.API_KEY, apiKeyResolver())
         }
     }
 }
@@ -70,9 +81,7 @@ internal fun buildImagesClient(
 
     if (isDebug) {
         install(Logging) {
-            logger = object : Logger {
-                override fun log(message: String) { KermitLogger.d { "[Images] $message" } }
-            }
+            logger = ktorDebugLogger(tag = "Images", redactApiKeyInQuery = false)
             level = LogLevel.ALL
         }
     }

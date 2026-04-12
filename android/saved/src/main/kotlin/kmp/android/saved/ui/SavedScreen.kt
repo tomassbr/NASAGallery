@@ -56,16 +56,24 @@ internal fun SavedRoute(navController: NavHostController) {
     LaunchedEffect(viewModel) {
         viewModel.onViewAppeared()
         viewModel.events.collectLatest { event ->
-            if (event is FavoritesEvent.ShowUndoSnackbar) {
-                scope.launch {
-                    val result = snackbarHostState.showSnackbar(
-                        message = "Removed from favorites",
-                        actionLabel = "Undo",
-                    )
-                    if (result == SnackbarResult.ActionPerformed) {
-                        viewModel.onIntent(FavoritesIntent.UndoRemove(event.nasaId))
+            when (event) {
+                is FavoritesEvent.ShowUndoSnackbar -> {
+                    scope.launch {
+                        val result = snackbarHostState.showSnackbar(
+                            message = "Removed from favorites",
+                            actionLabel = "Undo",
+                        )
+                        if (result == SnackbarResult.ActionPerformed) {
+                            viewModel.onIntent(FavoritesIntent.UndoRemove(event.nasaId))
+                        }
                     }
                 }
+                FavoritesEvent.SignInRequired -> {
+                    scope.launch {
+                        snackbarHostState.showSnackbar("Sign in to save favorites")
+                    }
+                }
+                is FavoritesEvent.NavigateToDetail -> Unit
             }
         }
     }

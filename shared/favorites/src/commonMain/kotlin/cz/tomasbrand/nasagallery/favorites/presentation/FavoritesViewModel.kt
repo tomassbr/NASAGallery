@@ -6,7 +6,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
 import cz.tomasbrand.nasagallery.favorites.data.local.FavoritesSource
+import cz.tomasbrand.nasagallery.favorites.domain.mapping.toFavorite
 import cz.tomasbrand.nasagallery.favorites.domain.model.Favorite
+import cz.tomasbrand.nasagallery.gallery.domain.model.GalleryItem
+import kmp.shared.auth.domain.model.AuthUser
+import kmp.shared.auth.domain.usecase.GetCurrentUserUseCase
 import kmp.shared.base.presentation.vm.BaseScopedViewModel
 import kmp.shared.base.presentation.vm.VmEvent
 import kmp.shared.base.presentation.vm.VmIntent
@@ -20,12 +24,21 @@ import kotlinx.coroutines.launch
 
 class FavoritesViewModel(
     private val source: FavoritesSource,
+    private val getCurrentUser: GetCurrentUserUseCase,
 ) : BaseScopedViewModel<FavoritesState, FavoritesIntent, FavoritesEvent>() {
 
     private var favorites: ImmutableList<Favorite> by mutableStateOf(persistentListOf())
     private var pendingRemoval: Favorite? by mutableStateOf(null)
+    private var currentUser: AuthUser? by mutableStateOf(null)
+    private var hasAuthSnapshot: Boolean by mutableStateOf(false)
 
     init {
+        getCurrentUser()
+            .onEach {
+                currentUser = it
+                hasAuthSnapshot = true
+            }
+            .launchIn(viewModelScope)
         source.observeAll()
             .onEach { favorites = it.toImmutableList() }
             .launchIn(viewModelScope)
@@ -41,6 +54,17 @@ class FavoritesViewModel(
 
     override fun onIntent(intent: FavoritesIntent) {
         when (intent) {
+            is FavoritesIntent.Add -> {
+                if (!hasAuthSnapshot) return
+                if (currentUser.mustSignInToSaveFavorites()) {
+                    viewModelScope.launch { _events.emit(FavoritesEvent.SignInRequired) }
+                    return
+                }
+                val favorite = intent.item.toFavorite()
+                if (!source.isFavorite(favorite.nasaId)) {
+                    source.add(favorite)
+                }
+            }
             is FavoritesIntent.Remove -> {
                 pendingRemoval = favorites.firstOrNull { it.nasaId == intent.nasaId }
                 source.remove(intent.nasaId)
@@ -65,12 +89,17 @@ data class FavoritesState(
 ) : VmState
 
 sealed interface FavoritesIntent : VmIntent {
+    data class Add(val item: GalleryItem) : FavoritesIntent
     data class Remove(val nasaId: String) : FavoritesIntent
     data class UndoRemove(val nasaId: String) : FavoritesIntent
     data class OpenDetail(val nasaId: String) : FavoritesIntent
 }
 
 sealed interface FavoritesEvent : VmEvent {
+    data object SignInRequired : FavoritesEvent
     data class ShowUndoSnackbar(val nasaId: String) : FavoritesEvent
     data class NavigateToDetail(val nasaId: String) : FavoritesEvent
 }
+
+private fun AuthUser?.mustSignInToSaveFavorites(): Boolean =
+    this == null || isGuest

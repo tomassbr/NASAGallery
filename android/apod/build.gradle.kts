@@ -7,6 +7,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":android:explore"))
     implementation(project(":android:shared"))
     implementation(project(":shared:umbrella"))
 }
