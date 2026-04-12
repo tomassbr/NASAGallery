@@ -1,0 +1,40 @@
+name: iOS - Build develop
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [closed]
+
+jobs:
+  build:
+    name: Create new build
+    if: github.event.pull_request.merged == true
+    runs-on:
+      group: matee-tartelets
+    timeout-minutes: 60
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          clean: false
+      - name: Setup tools
+        working-directory: ios
+        run: ./scripts/setup.sh
+      - name: Generate build number
+        run: echo "BUILD_NUMBER=$(echo `date +"%y%m%d%H%M"`)" >> $GITHUB_ENV
+      - name: Prepare App Store Connect API key file
+        env:
+          APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_MATEE }}
+        working-directory: ios
+        run: echo "$APP_STORE_CONNECT_API_KEY_CONTENT" > AuthKey_Matee.p8
+      - name: Create a new Alpha build
+        working-directory: ios
+        run: fastlane build_alpha
+      - name: Upload the Alpha build to the TestFlight
+        env:
+          APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_MATEE }}
+          SLACK_URL: ${{ secrets.FASTLANE_SLACK_URL }}
+          DISTRIBUTE_EXTERNAL: false
+        working-directory: ios
+        run: fastlane upload_testflight_alpha distribute_external:false
