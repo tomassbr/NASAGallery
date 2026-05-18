@@ -30,8 +30,8 @@ public struct SettingsFeatureView: View {
                 .padding(.vertical, .spaceSM)
             }
             .background(Color.nasaBackground.ignoresSafeArea())
-            .navigationTitle("Settings")
-            .navigationBarTitleDisplayMode(.large)
+            .toolbar(.hidden, for: .navigationBar)
+            .safeAreaInset(edge: .top, spacing: 0) { settingsHeader }
             .sheet(isPresented: editingApiKeyBinding) { apiKeyEditorSheet }
         }
         .tint(AppTheme.Colors.navBarTitle)
@@ -39,6 +39,12 @@ public struct SettingsFeatureView: View {
         .toastView($toastData)
         .bindViewModel(viewModel, onEvent: onEvent)
         .task { for await s in viewModel.state { state = s } }
+    }
+
+    // MARK: - Header
+
+    private var settingsHeader: some View {
+        NasaPageHeader(title: "Settings", subtitle: "PREFERENCES")
     }
 
     // MARK: - Sections

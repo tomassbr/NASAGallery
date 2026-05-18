@@ -151,6 +151,7 @@ public struct DashboardFeatureView: View {
                 title: apod.title,
                 imageUrl: URL(string: apod.displayUrl),
                 date: apod.date,
+                explanation: apod.explanation,
                 isFavorited: false,
                 onFavorite: {},
                 onShare: { apodViewModel.onIntent(ApodIntentShare.shared) },

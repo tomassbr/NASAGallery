@@ -29,3 +29,9 @@ thumbs.db
 **/src/uat/res/**/ic_launcher.png
 **/src/uat/res/**/ic_launcher_round.png
 ios/.idea
+
+# Swift Package Manager build artifacts
+.build/
+
+# Claude Code local config
+.claude/

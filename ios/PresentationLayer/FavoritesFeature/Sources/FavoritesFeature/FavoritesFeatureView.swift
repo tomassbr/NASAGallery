@@ -32,9 +32,8 @@ public struct FavoritesFeatureView: View {
                 }
             }
             .animation(.easeInOut(duration: 0.25), value: showUndo)
-            .navigationTitle("Favorites")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar { savedCountBadge }
+            .toolbar(.hidden, for: .navigationBar)
+            .safeAreaInset(edge: .top, spacing: 0) { favoritesHeader }
         }
         .tint(AppTheme.Colors.navBarTitle)
         .toastView($toastData)
@@ -42,14 +41,26 @@ public struct FavoritesFeatureView: View {
         .task { for await s in viewModel.state { state = s } }
     }
 
-    // MARK: - Toolbar
+    // MARK: - Header
 
-    private var savedCountBadge: some ToolbarContent {
-        ToolbarItem(placement: .navigationBarTrailing) {
-            Text("\(favorites.count) SAVED")
-                .font(.nasaLabelSmall)
-                .foregroundStyle(Color.nasaSubtle)
-                .tracking(1.2)
+    private var favoritesHeader: some View {
+        NasaPageHeader(title: "Favorites", subtitle: "\(favorites.count) SAVED") {
+            Button(action: {}) {
+                NasaImageAsset.Icon.sort
+                    .renderingMode(.template)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: .iconSize, height: .iconSize)
+                    .foregroundStyle(Color.nasaOnSurfaceVariant)
+                    .frame(width: 40, height: 40)
+                    .background(
+                        Circle()
+                            .fill(Color.nasaSurface)
+                            .overlay(Circle().strokeBorder(Color.nasaBorderSubtle, lineWidth: 1))
+                    )
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Filter")
         }
     }
 
