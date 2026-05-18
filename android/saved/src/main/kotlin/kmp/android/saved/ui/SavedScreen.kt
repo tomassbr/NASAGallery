@@ -19,7 +19,6 @@ import androidx.compose.material.SnackbarHost
 import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.SnackbarResult
 import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -39,6 +38,7 @@ import cz.tomasbrand.nasagallery.favorites.presentation.FavoritesViewModel
 import kmp.android.shared.components.FavoriteButton
 import kmp.android.shared.components.NasaAsyncImage
 import kmp.android.shared.components.NasaEmptyView
+import kmp.android.shared.components.NasaPageHeader
 import kmp.android.shared.style.NasaColor
 import kmp.android.shared.style.Radius
 import kmp.android.shared.style.Space
@@ -101,36 +101,13 @@ private fun FavoritesScreen(
                 .padding(innerPadding)
                 .background(NasaColor.Background),
         ) {
-            FavoritesTopBar(count = state.favorites.size, isEmpty = state.isEmpty)
+            NasaPageHeader(
+                title = "Favorites",
+                subtitle = if (!state.isEmpty) "${state.favorites.size} SAVED" else null,
+            )
             FavoritesContent(state = state, onIntent = onIntent)
         }
     }
-}
-
-// MARK: - Top Bar
-
-@Composable
-private fun FavoritesTopBar(count: Int, isEmpty: Boolean) {
-    TopAppBar(
-        title = {
-            Column {
-                Text(
-                    text = "Favorites",
-                    style = MaterialTheme.typography.h6,
-                    color = NasaColor.OnBackground,
-                )
-                if (!isEmpty) {
-                    Text(
-                        text = "$count SAVED",
-                        style = MaterialTheme.typography.overline,
-                        color = NasaColor.Subtle,
-                    )
-                }
-            }
-        },
-        backgroundColor = NasaColor.Background,
-        elevation = 0.dp,
-    )
 }
 
 // MARK: - Content

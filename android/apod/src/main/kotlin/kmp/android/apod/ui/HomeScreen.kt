@@ -22,7 +22,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
-import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -50,6 +49,7 @@ import kmp.android.shared.components.NasaAsyncImage
 import kmp.android.shared.components.NasaChip
 import kmp.android.shared.components.NasaErrorView
 import kmp.android.shared.components.NasaLoadingView
+import kmp.android.shared.components.NasaPageHeader
 import kmp.android.shared.style.NasaColor
 import kmp.android.shared.style.Radius
 import kmp.android.shared.style.Space
@@ -108,7 +108,7 @@ private fun HomeScreen(
             .fillMaxSize()
             .background(NasaColor.Background),
     ) {
-        HomeTopBar()
+        NasaPageHeader(title = "NASA Gallery", subtitle = "EXPLORATION DATA")
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -129,30 +129,6 @@ private fun HomeScreen(
             )
         }
     }
-}
-
-// MARK: - Top Bar
-
-@Composable
-private fun HomeTopBar() {
-    TopAppBar(
-        title = {
-            Column {
-                Text(
-                    text = "NASA Gallery",
-                    style = MaterialTheme.typography.h6,
-                    color = NasaColor.OnBackground,
-                )
-                Text(
-                    text = "EXPLORATION DATA",
-                    style = MaterialTheme.typography.overline,
-                    color = NasaColor.Subtle,
-                )
-            }
-        },
-        backgroundColor = NasaColor.Background,
-        elevation = 0.dp,
-    )
 }
 
 // MARK: - Filter Section
@@ -204,7 +180,10 @@ private fun ApodContent(
             title = state.apod!!.title,
             imageUrl = state.apod!!.displayUrl,
             date = state.apod!!.date,
+            explanation = state.apod!!.explanation,
             copyright = state.apod!!.copyright,
+            isFavorited = false,
+            onFavorite = null,
             onShare = { onIntent(ApodIntent.Share) },
             onViewFullscreen = { onIntent(ApodIntent.OpenFullscreen(state.apod!!)) },
             modifier = Modifier
@@ -324,46 +303,28 @@ private fun GalleryCarouselCard(
             .clip(RoundedCornerShape(Radius.MD))
             .clickable(onClick = onClick),
     ) {
-        CardImage(thumbnailUrl = thumbnailUrl, contentDescription = title)
-        CardGradientOverlay()
-        CardTitle(
-            title = title,
+        NasaAsyncImage(
+            url = thumbnailUrl,
+            contentDescription = title,
+            modifier = Modifier.fillMaxSize(),
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    brush = androidx.compose.ui.graphics.Brush.verticalGradient(
+                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f)),
+                    ),
+                ),
+        )
+        Text(
+            text = title,
+            style = MaterialTheme.typography.caption,
+            color = Color.White,
+            maxLines = 2,
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .padding(Space.SM),
         )
     }
-}
-
-@Composable
-private fun CardImage(thumbnailUrl: String, contentDescription: String) {
-    NasaAsyncImage(
-        url = thumbnailUrl,
-        contentDescription = contentDescription,
-        modifier = Modifier.fillMaxSize(),
-    )
-}
-
-@Composable
-private fun CardGradientOverlay() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                brush = androidx.compose.ui.graphics.Brush.verticalGradient(
-                    colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f)),
-                ),
-            ),
-    )
-}
-
-@Composable
-private fun CardTitle(title: String, modifier: Modifier = Modifier) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.caption,
-        color = Color.White,
-        maxLines = 2,
-        modifier = modifier,
-    )
 }

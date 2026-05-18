@@ -28,7 +28,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
-import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
@@ -53,6 +52,7 @@ import cz.tomasbrand.nasagallery.profile.presentation.ProfileEvent
 import cz.tomasbrand.nasagallery.profile.presentation.ProfileIntent
 import cz.tomasbrand.nasagallery.profile.presentation.ProfileState
 import cz.tomasbrand.nasagallery.profile.presentation.ProfileViewModel
+import kmp.android.shared.components.NasaPageHeader
 import kmp.android.shared.style.NasaColor
 import kmp.android.shared.style.Radius
 import kmp.android.shared.style.Space
@@ -132,7 +132,7 @@ private fun ProfileScreen(
             .fillMaxSize()
             .background(NasaColor.Background),
     ) {
-        ProfileTopBar()
+        NasaPageHeader(title = "Settings", subtitle = "PREFERENCES")
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -156,22 +156,6 @@ private fun ProfileScreen(
             )
         }
     }
-}
-
-// MARK: - Top Bar
-
-@Composable
-private fun ProfileTopBar() {
-    TopAppBar(
-        title = {
-            Column {
-                Text(text = "Settings", style = MaterialTheme.typography.h6, color = NasaColor.OnBackground)
-                Text(text = "PREFERENCES", style = MaterialTheme.typography.overline, color = NasaColor.Subtle)
-            }
-        },
-        backgroundColor = NasaColor.Background,
-        elevation = 0.dp,
-    )
 }
 
 // MARK: - User Card

@@ -29,6 +29,9 @@ object NasaColor {
     val OnError             = Color(0xFFFFFFFF)
     val Warning             = Color(0xFFf59e0b)  // status/warning (amber-500)
 
+    // Borders
+    val BorderSubtle        = Color(0xFF1e2333)  // border/subtle
+
     // Overlays
     val MediaOverlay        = Color(0x73000000)
 }

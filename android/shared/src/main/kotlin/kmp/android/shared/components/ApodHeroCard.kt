@@ -25,6 +25,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.dp
 import kmp.android.shared.style.NasaColor
 import kmp.android.shared.style.Radius
 import kmp.android.shared.style.Space
@@ -34,7 +35,10 @@ fun ApodHeroCard(
     title: String,
     imageUrl: String?,
     date: String,
+    explanation: String,
     copyright: String?,
+    isFavorited: Boolean = false,
+    onFavorite: (() -> Unit)? = null,
     onShare: () -> Unit,
     onViewFullscreen: () -> Unit,
     modifier: Modifier = Modifier,
@@ -52,19 +56,28 @@ fun ApodHeroCard(
             contentScale = ContentScale.Crop,
         )
 
-        // Gradient overlay
+        // Gradient overlay — center to bottom
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
-                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.75f)),
-                        startY = 200f,
+                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.85f)),
+                        startY = Float.MAX_VALUE * 0.3f,
                     ),
                 ),
         )
 
-        // Content overlay
+        // Top-left APOD badge
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(Space.MD),
+        ) {
+            ApodBadge(date = date)
+        }
+
+        // Bottom labels stack
         Column(
             modifier = Modifier
                 .align(Alignment.BottomStart)
@@ -73,38 +86,66 @@ fun ApodHeroCard(
         ) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.h6,
+                style = MaterialTheme.typography.subtitle1,
                 color = Color.White,
                 maxLines = 2,
             )
+            Text(
+                text = explanation,
+                style = MaterialTheme.typography.caption,
+                color = Color.White.copy(alpha = 0.75f),
+                maxLines = 2,
+            )
+            if (copyright != null) {
+                Text(
+                    text = "© $copyright",
+                    style = MaterialTheme.typography.caption,
+                    color = Color.White.copy(alpha = 0.5f),
+                )
+            }
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End,
             ) {
-                Column {
-                    Text(
-                        text = date,
-                        style = MaterialTheme.typography.caption,
-                        color = Color.White.copy(alpha = 0.7f),
-                    )
-                    if (copyright != null) {
-                        Text(
-                            text = "© $copyright",
-                            style = MaterialTheme.typography.caption,
-                            color = Color.White.copy(alpha = 0.5f),
-                        )
-                    }
+                if (onFavorite != null) {
+                    FavoriteButton(isFavorited = isFavorited, onClick = onFavorite)
                 }
-                Row {
-                    IconButton(onClick = onShare) {
-                        Icon(Icons.Outlined.Share, contentDescription = "Share", tint = Color.White)
-                    }
-                    IconButton(onClick = onViewFullscreen) {
-                        Icon(Icons.Outlined.Search, contentDescription = "Fullscreen", tint = Color.White)
-                    }
+                IconButton(onClick = onShare) {
+                    Icon(Icons.Outlined.Share, contentDescription = "Share", tint = Color.White)
+                }
+                IconButton(onClick = onViewFullscreen) {
+                    Icon(Icons.Outlined.Search, contentDescription = "Fullscreen", tint = Color.White)
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ApodBadge(date: String) {
+    val formatted = formatApodDate(date)
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(Radius.SM))
+            .background(NasaColor.MediaOverlay)
+            .padding(horizontal = Space.SM, vertical = Space.XS),
+    ) {
+        Text(
+            text = "APOD • $formatted",
+            style = MaterialTheme.typography.overline,
+            color = Color.White.copy(alpha = 0.9f),
+        )
+    }
+}
+
+private fun formatApodDate(date: String): String {
+    return try {
+        val parts = date.split("-")
+        if (parts.size != 3) return date
+        val months = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+        val month = months.getOrNull(parts[1].toInt() - 1) ?: return date
+        "$month ${parts[2].trimStart('0')}"
+    } catch (_: Exception) {
+        date
     }
 }
