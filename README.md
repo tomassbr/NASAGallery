@@ -1,29 +1,29 @@
 # NASA Gallery
 
-Mobilní aplikace pro prohlížení obsahu z NASA volně dostupných API. Postavená na Kotlin Multiplatform se sdílenou business logikou a nativním UI — SwiftUI na iOS, Jetpack Compose na Android.
+A mobile app for browsing NASA's publicly available APIs, built with Kotlin Multiplatform for shared business logic and native UI — SwiftUI on iOS, Jetpack Compose on Android.
 
-## Funkce
+## Features
 
-- **Dnešní snímek (APOD)** — astronomy picture of the day s popisem, sdílením a oblíbenými
-- **Galerie** — procházení a vyhledávání v NASA Image Library s podporou stránkování
-- **Oblíbené** — ukládání snímků lokálně přes SQLDelight, reaktivní Flow
-- **Přihlášení** — Google Sign-In, Sign in with Apple, nebo pokračovat jako host
+- **Astronomy Picture of the Day (APOD)** — daily image with description, sharing and favorites
+- **Gallery** — browse and search the NASA Image Library with pagination
+- **Favorites** — save images locally via SQLDelight with reactive Flow
+- **Authentication** — Google Sign-In, Sign in with Apple, or continue as guest
 
-## Technologie
+## Tech Stack
 
-| Oblast | Technologie |
-|--------|-------------|
-| Sdílená logika | Kotlin Multiplatform |
+| Area | Technology |
+|------|------------|
+| Shared logic | Kotlin Multiplatform |
 | iOS UI | SwiftUI |
 | Android UI | Jetpack Compose |
 | Networking | Ktor |
 | DI | Koin (shared/Android), Factory (iOS) |
-| Databáze | SQLDelight |
+| Database | SQLDelight |
 | Auth | Firebase Auth |
 
-## Architektura
+## Architecture
 
-Clean Architecture + MVI. Sdílený kód pokrývá Model, Domain, Data a Presentation vrstvy. Nativní UI a navigace zůstávají na každé platformě zvlášť.
+Clean Architecture + MVI. Shared code covers the Model, Domain, Data and Presentation layers. Native UI and navigation are implemented separately on each platform.
 
 ```
 shared/
@@ -34,14 +34,14 @@ shared/
   apod/        APOD feature
   gallery/     Image library + pagination
   search/      Debounced search + suggestions
-  favorites/   SQLDelight CRUD, reaktivní Flow
-  umbrella/    Agreguje všechny moduly → iOS xcframework
+  favorites/   SQLDelight CRUD, reactive Flow
+  umbrella/    Aggregates all modules → iOS xcframework
 
-android/       Jetpack Compose screeny, NavHost
-ios/           SwiftUI screeny, design system, TabView
+android/       Jetpack Compose screens, NavHost
+ios/           SwiftUI screens, design system, TabView
 ```
 
-## NASA API
+## NASA APIs
 
 | API | Base URL |
 |-----|----------|
@@ -49,7 +49,7 @@ ios/           SwiftUI screeny, design system, TabView
 | Images Search | `https://images-api.nasa.gov/search` |
 | Images Asset | `https://images-api.nasa.gov/asset/{nasa_id}` |
 
-API klíč se konfiguruje v `local.properties` (Android) a `xcconfig` (iOS) — není součástí repozitáře.
+The API key is configured via `local.properties` (Android) and `xcconfig` (iOS) — not included in the repository.
 
 ## Build
 
@@ -60,23 +60,23 @@ API klíč se konfiguruje v `local.properties` (Android) a `xcconfig` (iOS) — 
 
 ### iOS
 ```bash
-# 1. Sestavit KMP xcframework
+# 1. Build the KMP xcframework
 ./gradlew :shared:umbrella:assembleKMPSharedXCFramework
 
-# 2. Zkopírovat do ios/DomainLayer/
+# 2. Copy to ios/DomainLayer/
 cp -R shared/umbrella/build/XCFrameworks/Debug/KMPShared.xcframework ios/DomainLayer/KMPShared.xcframework
 
-# 3. Otevřít v Xcode
+# 3. Open in Xcode
 open ios/NASAGallery.xcodeproj
 ```
 
-## Navigace
+## Navigation
 
-Tři taby:
-- **Today** — APOD, dnešní snímek + kalendář
-- **Explore** — galerie + vyhledávání
-- **Saved** — oblíbené
+Three tabs:
+- **Today** — APOD, daily image + calendar
+- **Explore** — gallery + search
+- **Saved** — favorites
 
-## Licence
+## License
 
 MIT
