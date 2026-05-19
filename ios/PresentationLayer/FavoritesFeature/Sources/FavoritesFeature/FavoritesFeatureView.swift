@@ -44,7 +44,7 @@ public struct FavoritesFeatureView: View {
     // MARK: - Header
 
     private var favoritesHeader: some View {
-        NasaPageHeader(title: "Favorites", subtitle: "\(favorites.count) SAVED") {
+        NasaPageHeader(title: "Favorites", subtitle: favorites.isEmpty ? nil : "\(favorites.count) SAVED") {
             Button(action: {}) {
                 NasaImageAsset.Icon.sort
                     .renderingMode(.template)

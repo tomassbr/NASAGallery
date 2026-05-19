@@ -121,10 +121,21 @@ public struct ApodHeroCard: View {
     // MARK: - Helpers
 
     private var formattedDate: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        guard let d = formatter.date(from: date) else { return date }
-        formatter.dateFormat = "MMM d"
-        return formatter.string(from: d)
+        guard let d = ApodHeroCard.inputFormatter.date(from: date) else { return date }
+        return ApodHeroCard.outputFormatter.string(from: d)
     }
+
+    private static let inputFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        f.locale = Locale(identifier: "en_US_POSIX")
+        return f
+    }()
+
+    private static let outputFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "MMM d"
+        f.locale = Locale(identifier: "en_US_POSIX")
+        return f
+    }()
 }
