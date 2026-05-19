@@ -59,8 +59,6 @@ public struct SettingsFeatureView: View {
         VStack(alignment: .leading, spacing: .spaceSM) {
             NasaSectionHeader("PREFERENCES")
             NasaInsetSettingsCard {
-                NasaSettingsToggleRow(symbol: .moonFill, title: "Dark Theme", isOn: darkThemeBinding)
-                settingsRowDivider
                 NasaSettingsToggleRow(symbol: .wifiExclamationmark, title: "Data Saver", isOn: dataSaverBinding)
             }
         }
@@ -188,13 +186,6 @@ public struct SettingsFeatureView: View {
     }
 
     // MARK: - Bindings
-
-    private var darkThemeBinding: Binding<Bool> {
-        Binding(
-            get: { state.darkThemeEnabled },
-            set: { viewModel.onIntent(ProfileIntentToggleDarkTheme(enabled: $0)) }
-        )
-    }
 
     private var dataSaverBinding: Binding<Bool> {
         Binding(

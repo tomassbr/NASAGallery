@@ -53,9 +53,11 @@ public struct NasaSettingsActionRow: View {
                     .font(.nasaLabelMedium)
                     .foregroundStyle(Color.nasaSubtle)
             }
-            Image(systemSymbol: .chevronRight)
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(Color.nasaSubtle)
+            if action != nil {
+                Image(systemSymbol: .chevronRight)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Color.nasaSubtle)
+            }
         }
     }
 

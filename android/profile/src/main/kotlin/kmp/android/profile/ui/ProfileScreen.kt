@@ -31,7 +31,6 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.NightsStay
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.SignalWifiOff
 import androidx.compose.runtime.Composable
@@ -142,9 +141,7 @@ private fun ProfileScreen(
             UserCard()
             SectionHeader("PREFERENCES")
             PreferencesSection(
-                darkTheme = state.darkThemeEnabled,
                 dataSaver = state.dataSaverEnabled,
-                onDarkTheme = { onIntent(ProfileIntent.ToggleDarkTheme(it)) },
                 onDataSaver = { onIntent(ProfileIntent.ToggleDataSaver(it)) },
             )
             SectionHeader("DATA & STORAGE")
@@ -200,19 +197,10 @@ private fun UserInfo() {
 
 @Composable
 private fun PreferencesSection(
-    darkTheme: Boolean,
     dataSaver: Boolean,
-    onDarkTheme: (Boolean) -> Unit,
     onDataSaver: (Boolean) -> Unit,
 ) {
     SettingsCard {
-        SettingsToggleRow(
-            icon = Icons.Default.NightsStay,
-            title = "Dark Theme",
-            checked = darkTheme,
-            onCheckedChange = onDarkTheme,
-        )
-        Divider(color = NasaColor.SurfaceElevated)
         SettingsToggleRow(
             icon = Icons.Default.SignalWifiOff,
             title = "Data Saver",
