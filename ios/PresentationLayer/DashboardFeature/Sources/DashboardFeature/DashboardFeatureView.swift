@@ -12,6 +12,8 @@ public struct DashboardFeatureView: View {
     @State private var galleryState = GalleryState(items: [], isLoading: false, isLoadingMore: false, hasMore: true, error: nil)
     @State private var selectedFilter = "All Sources"
     @State private var selectedNasaId: String?
+    @State private var showApodDetail = false
+    @State private var showComingSoon = false
 
     @Injected(\.apodViewModel) private var apodViewModel: ApodViewModel
     @Injected(\.galleryViewModel) private var galleryViewModel: GalleryViewModel
@@ -36,13 +38,23 @@ public struct DashboardFeatureView: View {
                 dashboardHeaderBar
             }
             .toolbar(.hidden, for: .navigationBar)
-            .navigationDestination(isPresented: Binding(
-                    get: { selectedNasaId != nil },
-                    set: { if !$0 { selectedNasaId = nil } }
-                )) {
-                    if let nasaId = selectedNasaId {
-                        mediaDetailView(nasaId: nasaId)
-                    }
+            .sheet(isPresented: Binding(
+                get: { selectedNasaId != nil },
+                set: { if !$0 { selectedNasaId = nil } }
+            )) {
+                if let nasaId = selectedNasaId {
+                    NavigationStack { mediaDetailView(nasaId: nasaId) }
+                        .background(Color.nasaBackground)
+                }
+            }
+            .sheet(isPresented: $showApodDetail) {
+                NavigationStack { apodDetailView }
+                    .background(Color.nasaBackground)
+            }
+            .alert("Coming Soon", isPresented: $showComingSoon) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text("This feature will be available in a future update.")
             }
         }
         .toastView($toastData)
@@ -54,7 +66,7 @@ public struct DashboardFeatureView: View {
         }
     }
 
-    // MARK: - Header (custom title + search; background left simple — no Material / glass stack)
+    // MARK: - Header
 
     private var dashboardHeaderBar: some View {
         HStack(alignment: .center, spacing: .spaceMD) {
@@ -87,7 +99,7 @@ public struct DashboardFeatureView: View {
     }
 
     private var dashboardSearchButton: some View {
-        Button(action: {}) {
+        Button(action: { showComingSoon = true }) {
             NasaImageAsset.Icon.search
                 .renderingMode(.template)
                 .resizable()
@@ -119,7 +131,13 @@ public struct DashboardFeatureView: View {
                     NasaChip(
                         title: option,
                         isSelected: selectedFilter == option,
-                        action: { selectedFilter = option }
+                        action: {
+                            if option == "All Sources" {
+                                selectedFilter = option
+                            } else {
+                                showComingSoon = true
+                            }
+                        }
                     )
                 }
             }
@@ -153,9 +171,9 @@ public struct DashboardFeatureView: View {
                 date: apod.date,
                 explanation: apod.explanation,
                 isFavorited: false,
-                onFavorite: {},
+                onFavorite: { showComingSoon = true },
                 onShare: { apodViewModel.onIntent(ApodIntentShare.shared) },
-                onViewFullscreen: { selectedNasaId = apod.title },
+                onViewFullscreen: { showApodDetail = true },
                 copyright: apod.copyright
             )
         } else if let error = apodState.error {
@@ -188,7 +206,7 @@ public struct DashboardFeatureView: View {
                     .tracking(1.5)
             }
             Spacer()
-            Button("See all") {}
+            Button("See all") { showComingSoon = true }
                 .font(.nasaLabelMedium)
                 .foregroundStyle(Color.nasaAccent)
         }
@@ -215,12 +233,21 @@ public struct DashboardFeatureView: View {
         }
     }
 
-    // MARK: - Navigation Destination
+    // MARK: - Sheet: Gallery Detail
 
     @ViewBuilder
     private func mediaDetailView(nasaId: String) -> some View {
         let item = galleryState.items.first(where: { $0.nasaId == nasaId })
         MediaDetailView(item: item, nasaId: nasaId)
+    }
+
+    // MARK: - Sheet: APOD Detail
+
+    @ViewBuilder
+    private var apodDetailView: some View {
+        if let apod = apodState.apod {
+            ApodDetailView(apod: apod)
+        }
     }
 
     // MARK: - Events
@@ -278,11 +305,12 @@ private struct GalleryCarouselCard: View {
     }
 }
 
-// MARK: - Media Detail View
+// MARK: - Gallery Media Detail Sheet
 
 private struct MediaDetailView: View {
     let item: GalleryItem?
     let nasaId: String
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         ScrollView {
@@ -292,15 +320,21 @@ private struct MediaDetailView: View {
             }
         }
         .background(Color.nasaBackground.ignoresSafeArea())
-        .navigationTitle(item?.title ?? "Detail")
+        .navigationTitle(item?.title ?? nasaId)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Done") { dismiss() }
+                    .foregroundStyle(Color.nasaPrimary)
+            }
+        }
     }
 
     private var heroImage: some View {
         NasaAsyncImage(
             url: URL(string: item?.thumbnailUrl ?? ""),
             contentMode: .fill,
-            cornerRadius: .radiusCard
+            cornerRadius: 0
         )
         .frame(maxWidth: .infinity)
         .frame(height: 280)
@@ -317,9 +351,64 @@ private struct MediaDetailView: View {
                     .font(.nasaLabelSmall)
                     .foregroundStyle(Color.nasaSubtle)
             }
-            Text("Explore this NASA image captured by space observatories and exploration missions.")
+        }
+    }
+}
+
+// MARK: - APOD Detail Sheet
+
+private struct ApodDetailView: View {
+    let apod: Apod
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: .spaceMD) {
+                heroImage
+                content.padding(.horizontal, .screenHorizontalPadding)
+                Spacer(minLength: .spaceLG)
+            }
+            .padding(.bottom, .spaceLG)
+        }
+        .background(Color.nasaBackground.ignoresSafeArea())
+        .navigationTitle("Astronomy Picture of the Day")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Done") { dismiss() }
+                    .foregroundStyle(Color.nasaPrimary)
+            }
+        }
+    }
+
+    private var heroImage: some View {
+        NasaAsyncImage(
+            url: URL(string: apod.displayUrl),
+            contentMode: .fill,
+            cornerRadius: 0
+        )
+        .frame(maxWidth: .infinity)
+        .aspectRatio(4 / 3, contentMode: .fit)
+        .clipped()
+    }
+
+    private var content: some View {
+        VStack(alignment: .leading, spacing: .spaceSM) {
+            Text(apod.title)
+                .font(.nasaTitleMedium)
+                .foregroundStyle(Color.nasaOnBackground)
+            Text(apod.date)
+                .font(.nasaLabelSmall)
+                .foregroundStyle(Color.nasaSubtle)
+            Text(apod.explanation)
                 .font(.nasaBodyMedium)
                 .foregroundStyle(Color.nasaOnSurfaceVariant)
+                .fixedSize(horizontal: false, vertical: true)
+            if let copyright = apod.copyright {
+                Text("© \(copyright)")
+                    .font(.nasaLabelSmall)
+                    .foregroundStyle(Color.nasaSubtle)
+            }
         }
     }
 }
