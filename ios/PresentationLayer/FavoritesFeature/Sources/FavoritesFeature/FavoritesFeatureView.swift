@@ -13,6 +13,7 @@ public struct FavoritesFeatureView: View {
     @State private var undoItem: Favorite?
     @State private var undoTask: Task<Void, Never>?
     @State private var showUndo = false
+    @State private var showComingSoon = false
 
     @Injected(\.favoritesViewModel) private var viewModel: FavoritesViewModel
 
@@ -39,13 +40,18 @@ public struct FavoritesFeatureView: View {
         .toastView($toastData)
         .bindViewModel(viewModel, onEvent: onEvent)
         .task { for await s in viewModel.state { state = s } }
+        .alert("Coming Soon", isPresented: $showComingSoon) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("This feature will be available in a future update.")
+        }
     }
 
     // MARK: - Header
 
     private var favoritesHeader: some View {
         NasaPageHeader(title: "Favorites", subtitle: favorites.isEmpty ? nil : "\(favorites.count) SAVED") {
-            Button(action: {}) {
+            Button(action: { showComingSoon = true }) {
                 NasaImageAsset.Icon.sort
                     .renderingMode(.template)
                     .resizable()

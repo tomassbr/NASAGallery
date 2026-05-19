@@ -144,7 +144,13 @@ private fun ExploreScreen(
                         NasaChip(
                             title = filter,
                             isSelected = filter == "All",
-                            onClick = {},
+                            onClick = {
+                                if (filter != "All") {
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar("This feature will be available in a future update.")
+                                    }
+                                }
+                            },
                         )
                         Spacer(Modifier.width(Space.SM))
                     }
