@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,7 +24,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.unit.dp
 import kmp.android.shared.style.NasaColor
 import kmp.android.shared.style.Radius
 import kmp.android.shared.style.Space
@@ -56,14 +54,15 @@ fun ApodHeroCard(
             contentScale = ContentScale.Crop,
         )
 
-        // Gradient overlay — center to bottom
+        // Gradient overlay — transparent at top, dark at bottom (starts fading at ~40%)
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
-                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.85f)),
-                        startY = Float.MAX_VALUE * 0.3f,
+                        0f to Color.Transparent,
+                        0.4f to Color.Transparent,
+                        1f to Color.Black.copy(alpha = 0.85f),
                     ),
                 ),
         )
